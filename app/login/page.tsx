@@ -5,10 +5,27 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Mail, Lock, Loader2, CheckCircle, Eye, EyeOff, ArrowRight } from "lucide-react"
+import {
+  Mail,
+  Lock,
+  Loader2,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  ArrowRight,
+} from "lucide-react"
 import Link from "next/link"
+
+const API_BASE = "https://provence.host/api/api_provence/api"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -23,12 +40,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     setMounted(true)
-    // Verifica se o usuário acabou de concluir o cadastro
     if (typeof window !== "undefined") {
       const cadastroInfo = localStorage.getItem("cadastro_concluido")
       if (cadastroInfo) {
         setCadastroConcluido(true)
-        // Remove o indicador após mostrar a mensagem
         setTimeout(() => {
           localStorage.removeItem("cadastro_concluido")
           setCadastroConcluido(false)
@@ -49,14 +64,11 @@ export default function LoginPage() {
     setSuccess("")
 
     try {
-      console.log("🚀 Iniciando login...")
-      console.log("📧 Email:", email)
-      console.log("🔗 URL da API:", "http://localhost/api/auth/login.php")
-
-      const response = await fetch("http://localhost/api/auth/login.php", {
+      const response = await fetch(`${API_BASE}/auth/login.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
           email: email.trim(),
@@ -65,59 +77,48 @@ export default function LoginPage() {
         credentials: "include",
       })
 
-      console.log("📡 Status da resposta:", response.status)
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-      console.log("📨 Resposta completa do servidor:", data)
 
       if (data.success) {
-        console.log("✅ Login bem-sucedido!")
-
-        // Salvar dados do usuário no localStorage
+        // Salvar dados do usuário no localStorage para uso em outras telas
         if (typeof window !== "undefined") {
           localStorage.setItem("user_logged", JSON.stringify(data.data))
           localStorage.setItem("usuario", JSON.stringify(data.data))
           localStorage.setItem("userId", data.data.id.toString())
           localStorage.setItem("userType", data.data.tipo_usuario)
-          console.log("💾 Dados salvos no localStorage:", data.data)
         }
 
-        setSuccess(`Bem-vindo de volta, ${data.data.nome}! Redirecionando...`)
+        setSuccess(
+          `Bem-vindo de volta, ${data.data.nome}! Redirecionando...`
+        )
 
-        // Aguardar um pouco antes de redirecionar para mostrar a mensagem
         setTimeout(() => {
-          console.log("🔄 Iniciando redirecionamento...")
-          console.log("👤 Tipo de usuário detectado:", data.data.tipo_usuario)
-
           switch (data.data.tipo_usuario) {
             case "admin":
-              console.log("🔄 Redirecionando para dashboard do admin...")
               router.push("/admin/dashboard")
               break
             case "paciente":
-              console.log("🔄 Redirecionando para página do paciente...")
               router.push("/paciente")
               break
             case "profissional":
-              console.log("🔄 Redirecionando para página do profissional...")
               router.push("/profissional")
               break
             default:
-              console.error("❌ Tipo de usuário desconhecido:", data.data.tipo_usuario)
               setError("Tipo de usuário inválido")
           }
         }, 1500)
       } else {
-        console.log("❌ Login falhou:", data.message)
         setError(data.message || "Email ou senha incorretos")
       }
-    } catch (error) {
-      console.error("💥 Erro no login:", error)
-      setError("Erro de conexão. Verifique se o servidor está funcionando.")
+    } catch (err) {
+      console.error("Erro no login:", err)
+      setError(
+        "Erro de conexão. Verifique se o servidor está funcionando."
+      )
     } finally {
       setLoading(false)
     }
@@ -125,44 +126,41 @@ export default function LoginPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f8f6f4] flex items-center justify-center">
         <div className="animate-pulse">
-          <div className="w-8 h-8 bg-purple-200 rounded-full"></div>
+          <div className="w-8 h-8 bg-[#c9a96e]/30 rounded-full" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-[#f8f6f4] flex flex-col relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-violet-100/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#c9a96e]/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#c9a96e]/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       <div className="flex-grow container mx-auto flex items-center justify-center p-4 relative z-10">
         <div className="w-full max-w-md animate-in fade-in-0 slide-in-from-bottom-4 duration-1000">
-          <Card className="bg-white/80 backdrop-blur-xl shadow-2xl border-0 rounded-3xl overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/80 to-purple-50/80 backdrop-blur-xl"></div>
-
+          <Card className="bg-white/90 backdrop-blur-xl shadow-2xl border-0 rounded-3xl overflow-hidden">
             <CardHeader className="text-center pb-8 pt-12 relative z-10">
               <div className="flex justify-center mb-6">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#c9a96e] to-[#b8944f] rounded-2xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#c9a96e] to-[#d4b87a] rounded-xl flex items-center justify-center">
                       <Lock className="h-8 w-8 text-white" />
                     </div>
                   </div>
-                  <div className="absolute -inset-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-20 animate-pulse"></div>
+                  <div className="absolute -inset-2 bg-[#c9a96e]/20 rounded-2xl blur animate-pulse" />
                 </div>
               </div>
 
-              <CardTitle className="text-4xl font-bold bg-gradient-to-r from-purple-700 via-violet-700 to-indigo-700 bg-clip-text text-transparent mb-3 tracking-tight">
+              <CardTitle className="text-4xl font-bold text-[#2c2c2c] mb-3 tracking-tight text-balance">
                 Bem-vindo
               </CardTitle>
-              <CardDescription className="text-slate-600 text-lg font-medium">
+              <CardDescription className="text-[#6b6b6b] text-lg font-medium">
                 Entre na sua conta para continuar
               </CardDescription>
             </CardHeader>
@@ -173,7 +171,8 @@ export default function LoginPage() {
                   <Alert className="border-emerald-200 bg-emerald-50/80 backdrop-blur-sm rounded-2xl">
                     <CheckCircle className="h-5 w-5 text-emerald-600" />
                     <AlertDescription className="text-emerald-800 font-medium">
-                      <strong>Cadastro concluído!</strong> Agora você pode fazer login.
+                      <strong>Cadastro concluído!</strong> Agora você pode
+                      fazer login.
                     </AlertDescription>
                   </Alert>
                 </div>
@@ -181,8 +180,11 @@ export default function LoginPage() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-3 group">
-                  <Label htmlFor="email" className="text-slate-700 font-semibold flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-purple-600" />
+                  <Label
+                    htmlFor="email"
+                    className="text-[#2c2c2c] font-semibold flex items-center gap-2 text-sm"
+                  >
+                    <Mail className="h-4 w-4 text-[#c9a96e]" />
                     Email
                   </Label>
                   <div className="relative">
@@ -192,17 +194,19 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
-                      className="h-12 border-slate-200 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 pl-4 text-slate-700 placeholder:text-slate-400"
+                      className="h-12 border-[#e0dcd6] focus:border-[#c9a96e] focus:ring-[#c9a96e]/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 pl-4 text-[#2c2c2c] placeholder:text-[#a0a0a0]"
                       required
                       disabled={loading}
                     />
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400/0 via-purple-400/0 to-purple-400/0 group-focus-within:from-purple-400/10 group-focus-within:via-transparent group-focus-within:to-indigo-400/10 transition-all duration-500 pointer-events-none"></div>
                   </div>
                 </div>
 
                 <div className="space-y-3 group">
-                  <Label htmlFor="senha" className="text-slate-700 font-semibold flex items-center gap-2 text-sm">
-                    <Lock className="h-4 w-4 text-purple-600" />
+                  <Label
+                    htmlFor="senha"
+                    className="text-[#2c2c2c] font-semibold flex items-center gap-2 text-sm"
+                  >
+                    <Lock className="h-4 w-4 text-[#c9a96e]" />
                     Senha
                   </Label>
                   <div className="relative">
@@ -212,26 +216,31 @@ export default function LoginPage() {
                       value={senha}
                       onChange={(e) => setSenha(e.target.value)}
                       placeholder="Sua senha"
-                      className="h-12 border-slate-200 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 pl-4 pr-12 text-slate-700 placeholder:text-slate-400"
+                      className="h-12 border-[#e0dcd6] focus:border-[#c9a96e] focus:ring-[#c9a96e]/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 pl-4 pr-12 text-[#2c2c2c] placeholder:text-[#a0a0a0]"
                       required
                       disabled={loading}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-purple-600 transition-colors duration-200"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#a0a0a0] hover:text-[#c9a96e] transition-colors duration-200"
                       disabled={loading}
                     >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
                     </button>
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400/0 via-purple-400/0 to-purple-400/0 group-focus-within:from-purple-400/10 group-focus-within:via-transparent group-focus-within:to-indigo-400/10 transition-all duration-500 pointer-events-none"></div>
                   </div>
                 </div>
 
                 {error && (
                   <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
                     <Alert className="border-red-200 bg-red-50/80 backdrop-blur-sm rounded-2xl">
-                      <AlertDescription className="text-red-700 font-medium">{error}</AlertDescription>
+                      <AlertDescription className="text-red-700 font-medium">
+                        {error}
+                      </AlertDescription>
                     </Alert>
                   </div>
                 )}
@@ -240,14 +249,16 @@ export default function LoginPage() {
                   <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
                     <Alert className="border-emerald-200 bg-emerald-50/80 backdrop-blur-sm rounded-2xl">
                       <CheckCircle className="h-5 w-5 text-emerald-600" />
-                      <AlertDescription className="text-emerald-700 font-medium">{success}</AlertDescription>
+                      <AlertDescription className="text-emerald-700 font-medium">
+                        {success}
+                      </AlertDescription>
                     </Alert>
                   </div>
                 )}
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="w-full h-12 bg-gradient-to-r from-[#c9a96e] to-[#b8944f] hover:from-[#b8944f] hover:to-[#a68340] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   disabled={loading}
                 >
                   {loading ? (
@@ -267,7 +278,7 @@ export default function LoginPage() {
               <div className="mt-8 text-center">
                 <Link
                   href="/esqueci-senha"
-                  className="text-purple-600 hover:text-purple-700 transition-colors font-medium text-sm hover:underline"
+                  className="text-[#c9a96e] hover:text-[#b8944f] transition-colors font-medium text-sm hover:underline"
                 >
                   Esqueci minha senha
                 </Link>
@@ -275,11 +286,11 @@ export default function LoginPage() {
             </CardContent>
 
             <CardFooter className="text-center pt-4 pb-8 relative z-10">
-              <p className="text-slate-600 w-full">
-                Não tem uma conta?{" "}
+              <p className="text-[#6b6b6b] w-full">
+                {"Não tem uma conta? "}
                 <Link
                   href="/register"
-                  className="text-purple-600 hover:text-purple-700 transition-colors font-semibold hover:underline"
+                  className="text-[#c9a96e] hover:text-[#b8944f] transition-colors font-semibold hover:underline"
                 >
                   Cadastre-se
                 </Link>

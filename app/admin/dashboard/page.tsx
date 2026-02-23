@@ -8,15 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {
@@ -59,8 +51,19 @@ export default function AdminDashboard() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
+
+  const API_BASE = "https://provence.host/api/api_provence/api"
+
+
+  const ENDPOINTS = {
+    listarPendentes: `${API_BASE}/listar_profissionais_pendentes.php`,
+    aprovar: `${API_BASE}/aprovar_profissional.php`,
+    recusar: `${API_BASE}/recusar_profissional.php`,
+  } as const
+
   useEffect(() => {
     setMounted(true)
+
     // Verificar se é admin
     const userLogged = localStorage.getItem("user_logged")
     if (!userLogged) {
@@ -81,21 +84,32 @@ export default function AdminDashboard() {
     }
 
     carregarProfissionaisPendentes()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
 
   const carregarProfissionaisPendentes = async () => {
     try {
+      setError("")
+      setSuccess("")
       setLoading(true)
-      const response = await fetch("http://localhost/api/admin/listar_profissionais_pendentes.php", {
+
+      const response = await fetch(ENDPOINTS.listarPendentes, {
+        method: "GET",
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
       })
 
       if (!response.ok) {
-        throw new Error("Erro ao carregar dados")
+        throw new Error(`Erro ao carregar dados (${response.status})`)
       }
 
       const data = await response.json()
-      setProfissionais(data)
+
+      // alguns backends retornam {sucesso, data: []} e outros retornam direto []
+      const list = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : []
+      setProfissionais(list)
     } catch (err) {
       setError("Erro ao carregar profissionais pendentes")
       console.error(err)
@@ -110,21 +124,23 @@ export default function AdminDashboard() {
     setSuccess("")
 
     try {
-      const response = await fetch("http://localhost/api/admin/aprovar_profissional.php", {
+      const response = await fetch(ENDPOINTS.aprovar, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({ id }),
         credentials: "include",
       })
 
       const data = await response.json()
-      if (data.sucesso) {
+
+      if (data?.sucesso || data?.success === true) {
         setSuccess("Profissional aprovado com sucesso!")
         setProfissionais((prev) => prev.filter((p) => p.id !== id))
       } else {
-        setError("Erro ao aprovar profissional")
+        setError(data?.mensagem || data?.message || "Erro ao aprovar profissional")
       }
     } catch (err) {
       setError("Erro de conexão")
@@ -140,23 +156,26 @@ export default function AdminDashboard() {
     setSuccess("")
 
     try {
-      const response = await fetch("http://localhost/api/admin/recusar_profissional.php", {
+      // Você tem "motivoRecusa" na UI. Se seu PHP ignorar, beleza; se usar, já vai pronto.
+      const response = await fetch(ENDPOINTS.recusar, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, motivo: motivoRecusa }),
         credentials: "include",
       })
 
       const data = await response.json()
-      if (data.sucesso) {
+
+      if (data?.sucesso || data?.success === true) {
         setSuccess("Profissional recusado e removido do sistema")
         setProfissionais((prev) => prev.filter((p) => p.id !== id))
         setSelectedProfissional(null)
         setMotivoRecusa("")
       } else {
-        setError("Erro ao recusar profissional")
+        setError(data?.mensagem || data?.message || "Erro ao recusar profissional")
       }
     } catch (err) {
       setError("Erro de conexão")
@@ -527,7 +546,17 @@ export default function AdminDashboard() {
                                   </div>
                                 </div>
 
-                                <DialogFooter>
+                                <div className="flex justify-end gap-3">
+                                  <Button
+                                    variant="outline"
+                                    className="rounded-xl"
+                                    onClick={() => {
+                                      setMotivoRecusa("")
+                                    }}
+                                  >
+                                    Cancelar
+                                  </Button>
+
                                   <Button
                                     onClick={() => selectedProfissional && recusarProfissional(selectedProfissional.id)}
                                     disabled={actionLoading === selectedProfissional?.id}
@@ -540,7 +569,7 @@ export default function AdminDashboard() {
                                     )}
                                     Confirmar Recusa
                                   </Button>
-                                </DialogFooter>
+                                </div>
                               </DialogContent>
                             </Dialog>
                           </div>

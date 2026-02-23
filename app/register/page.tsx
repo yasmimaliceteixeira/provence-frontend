@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { User, Stethoscope, Loader2, AlertTriangle, CheckCircle, Info, Sparkles } from "lucide-react"
 import Link from "next/link"
 
+const API_BASE = "https://provence.host/api/api_provence/api"
+
 interface FormData {
   nome: string
   email: string
@@ -26,11 +28,11 @@ interface FormData {
 }
 
 const especialidades = [
-  "Psicologia Clínica",
+  "Psicologia Cl\u00ednica",
   "Psicologia Cognitivo-Comportamental",
-  "Psicanálise",
+  "Psican\u00e1lise",
   "Psicologia Humanista",
-  "Psicologia Sistêmica",
+  "Psicologia Sist\u00eanica",
   "Neuropsicologia",
   "Psicologia do Desenvolvimento",
   "Psicologia Social",
@@ -101,20 +103,20 @@ export default function CadastroPage() {
   }
 
   const validateForm = () => {
-    if (!form.nome.trim()) return "Nome é obrigatório"
-    if (!form.email.trim()) return "Email é obrigatório"
+    if (!form.nome.trim()) return "Nome \u00e9 obrigat\u00f3rio"
+    if (!form.email.trim()) return "Email \u00e9 obrigat\u00f3rio"
     if (!form.senha || form.senha.length < 6) return "Senha deve ter pelo menos 6 caracteres"
-    if (!form.telefone.trim()) return "Telefone é obrigatório"
-    if (!form.cpf.trim()) return "CPF é obrigatório"
+    if (!form.telefone.trim()) return "Telefone \u00e9 obrigat\u00f3rio"
+    if (!form.cpf.trim()) return "CPF \u00e9 obrigat\u00f3rio"
 
     if (form.tipo_usuario === "profissional") {
-      if (!form.especialidade) return "Especialidade é obrigatória para profissionais"
-      if (!form.numero_crp.trim()) return "Número do CRP é obrigatório para profissionais"
-      if (!form.valor_consulta.trim()) return "Valor da consulta é obrigatório para profissionais"
+      if (!form.especialidade) return "Especialidade \u00e9 obrigat\u00f3ria para profissionais"
+      if (!form.numero_crp.trim()) return "N\u00famero do CRP \u00e9 obrigat\u00f3rio para profissionais"
+      if (!form.valor_consulta.trim()) return "Valor da consulta \u00e9 obrigat\u00f3rio para profissionais"
 
       const valor = Number.parseFloat(form.valor_consulta.replace(/[^\d,]/g, "").replace(",", "."))
-      if (valor < 50) return "Valor mínimo da consulta é R$ 50,00"
-      if (valor > 1000) return "Valor máximo da consulta é R$ 1.000,00"
+      if (valor < 50) return "Valor m\u00ednimo da consulta \u00e9 R$ 50,00"
+      if (valor > 1000) return "Valor m\u00e1ximo da consulta \u00e9 R$ 1.000,00"
     }
 
     return null
@@ -133,7 +135,7 @@ export default function CadastroPage() {
     setError("")
 
     try {
-      const submitData = {
+      const submitData: Record<string, unknown> = {
         nome: form.nome.trim(),
         email: form.email.trim(),
         senha: form.senha,
@@ -151,10 +153,11 @@ export default function CadastroPage() {
         })
       }
 
-      const response = await fetch("http://localhost/api/auth/register.php", {
+      const response = await fetch(`${API_BASE}/auth/register.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(submitData),
         credentials: "include",
@@ -168,12 +171,12 @@ export default function CadastroPage() {
 
       if (data.success) {
         localStorage.setItem("user_temp", JSON.stringify(data.data))
-        router.push("/completar-perfil")
+        router.push("/termos-uso")
       } else {
         setError(data.message || "Erro ao registrar.")
       }
-    } catch (err) {
-      setError("Erro de conexão. Verifique se o servidor está funcionando.")
+    } catch {
+      setError("Erro de conex\u00e3o. Verifique se o servidor est\u00e1 funcionando.")
     } finally {
       setLoading(false)
     }
@@ -181,7 +184,6 @@ export default function CadastroPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 flex flex-col relative">
-      {/* Simplified background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200 rounded-full blur-3xl"></div>
@@ -203,12 +205,11 @@ export default function CadastroPage() {
                 Criar conta
               </CardTitle>
               <CardDescription className="text-slate-600 text-lg font-medium">
-                Junte-se à nossa comunidade de saúde mental
+                {"Junte-se \u00e0 nossa comunidade de sa\u00fade mental"}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="px-8 pb-8 relative z-10">
-              {/* Seletor de tipo de usuário */}
               <div className="mb-8">
                 <div className="flex justify-center gap-4">
                   <button
@@ -272,14 +273,12 @@ export default function CadastroPage() {
                   </button>
                 </div>
 
-                {/* Aviso para profissionais */}
                 {form.tipo_usuario === "profissional" && (
                   <div className="mt-6">
                     <Alert className="border-amber-200 bg-amber-50/80 backdrop-blur-sm rounded-2xl">
                       <Info className="h-5 w-5 text-amber-600" />
                       <AlertDescription className="text-amber-800 font-medium">
-                        <strong>Atenção:</strong> Cadastros de profissionais passam por análise administrativa. Você
-                        receberá um email quando sua conta for aprovada.
+                        {"Aten\u00e7\u00e3o: Cadastros de profissionais passam por an\u00e1lise administrativa. Voc\u00ea receber\u00e1 um email quando sua conta for aprovada."}
                       </AlertDescription>
                     </Alert>
                   </div>
@@ -331,7 +330,7 @@ export default function CadastroPage() {
                       onChange={handleChange}
                       required
                       className="h-12 border-slate-200 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 pl-4 text-slate-700 placeholder:text-slate-400"
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder="M\u00ednimo 6 caracteres"
                       minLength={6}
                     />
                   </div>
@@ -393,7 +392,7 @@ export default function CadastroPage() {
 
                       <div className="space-y-3">
                         <Label htmlFor="numero_crp" className="text-slate-700 font-semibold text-sm">
-                          Número do CRP *
+                          {"N\u00famero do CRP *"}
                         </Label>
                         <Input
                           id="numero_crp"
@@ -408,7 +407,7 @@ export default function CadastroPage() {
 
                       <div className="space-y-3">
                         <Label htmlFor="valor_consulta" className="text-slate-700 font-semibold text-sm">
-                          Valor por Consulta * <span className="text-xs text-slate-500">(R$ 50 - R$ 1.000)</span>
+                          {"Valor por Consulta * "}<span className="text-xs text-slate-500">{"(R$ 50 - R$ 1.000)"}</span>
                         </Label>
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-medium">
@@ -439,7 +438,7 @@ export default function CadastroPage() {
                           onChange={handleChange}
                           className="w-full h-24 px-4 py-3 border border-slate-200 rounded-xl focus:border-purple-400 focus:ring-purple-400/20 bg-white/50 backdrop-blur-sm transition-all duration-300 resize-none text-slate-700 placeholder:text-slate-400"
                           rows={3}
-                          placeholder="Conte um pouco sobre sua experiência e abordagem profissional..."
+                          placeholder="Conte um pouco sobre sua experi\u00eancia e abordagem profissional..."
                         />
                       </div>
                     </>
@@ -475,7 +474,7 @@ export default function CadastroPage() {
 
             <CardFooter className="text-center pt-4 pb-8 relative z-10">
               <p className="text-slate-600 w-full">
-                Já tem uma conta?{" "}
+                {"J\u00e1 tem uma conta? "}
                 <Link
                   href="/login"
                   className="text-purple-600 hover:text-purple-700 transition-colors font-semibold hover:underline"

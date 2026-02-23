@@ -1,123 +1,130 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Calendar, Download, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/hooks/use-toast"
+import { Loader2, Calendar, Clock, User } from "lucide-react"
 
-const API_URL = "http://localhost/api"
+const API_BASE = "https://provence.host/api/api_provence/api"
 
-interface Consulta {
+type Consulta = {
   id: number
-  paciente_nome?: string
-  profissional_nome?: string
-  especialidade?: string
-  data_formatada: string
-  data_hora_formatada: string
+  profissional_nome: string
+  data: string
+  horario: string
   status: string
+  especialidade?: string
 }
 
 export function HistoricoConsultas() {
-  const { toast } = useToast()
   const [consultas, setConsultas] = useState<Consulta[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   useEffect(() => {
     fetchHistorico()
   }, [])
 
   const fetchHistorico = async () => {
+    setLoading(true)
+    setError("")
     try {
-      setLoading(true)
-      const response = await fetch(`${API_URL}/historico-consultas.php`, {
+      const token = localStorage.getItem("token") || ""
+      const res = await fetch(`${API_BASE}/listar_consultas.php`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       })
-      const data = await response.json()
-
-      if (data.success) {
-        setConsultas(data.data || [])
+      const data = await res.json()
+      if (data.success || data.status === "success") {
+        const todas = data.consultas || data.data || []
+        // Filtra consultas finalizadas/canceladas
+        setConsultas(
+          todas.filter(
+            (c: Consulta) =>
+              c.status === "realizada" || c.status === "cancelada" || c.status === "concluida"
+          )
+        )
       } else {
-        toast({
-          title: "Erro",
-          description: data.message || "Erro ao carregar histórico",
-          variant: "destructive",
-        })
+        setError(data.message || "Erro ao carregar histórico.")
       }
-    } catch (error) {
-      console.error("Erro ao buscar histórico:", error)
-      toast({
-        title: "Erro",
-        description: "Erro ao conectar com o servidor",
-        variant: "destructive",
-      })
+    } catch {
+      setError("Erro de conexão ao carregar histórico.")
     } finally {
       setLoading(false)
     }
   }
 
+  const statusBadge = (status: string) => {
+    switch (status) {
+      case "realizada":
+      case "concluida":
+        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">{"Realizada"}</Badge>
+      case "cancelada":
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">{"Cancelada"}</Badge>
+      default:
+        return <Badge variant="secondary">{status}</Badge>
+    }
+  }
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
-  if (consultas.length === 0) {
-    return <div className="text-center text-gray-500 py-8">Nenhuma consulta realizada</div>
-  }
-
   return (
     <div className="space-y-6">
-      {consultas.map((item, index) => (
-        <motion.div
-          key={item.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 * index }}
-        >
-          <Card className="bg-white border-0 shadow-md hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex items-start gap-4 flex-1">
-                  <Avatar className="w-16 h-16">
-                    <AvatarImage src={`/doctor${item.id}.jpg`} />
-                    <AvatarFallback className="bg-purple-600 text-white">
-                      {(item.profissional_nome || item.paciente_nome || "")
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{item.profissional_nome || item.paciente_nome}</h3>
-                      {item.especialidade && <p className="text-sm text-gray-500">{item.especialidade}</p>}
+      <div>
+        <h2 className="text-2xl font-bold">{"Histórico de Consultas"}</h2>
+        <p className="text-muted-foreground mt-1">{"Consultas já realizadas ou canceladas."}</p>
+      </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {consultas.length === 0 && !error ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">{"Nenhuma consulta no histórico."}</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {consultas.map((c) => (
+            <Card key={c.id}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">{c.profissional_nome}</span>
+                      {c.especialidade && (
+                        <span className="text-sm text-muted-foreground">{"- " + c.especialidade}</span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar className="w-4 h-4 text-purple-600" />
-                      <span>{item.data_hora_formatada}</span>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(c.data + "T12:00:00").toLocaleDateString("pt-BR")}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {c.horario}
+                      </span>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-700 w-fit">
-                      Realizada
-                    </Badge>
                   </div>
+                  {statusBadge(c.status)}
                 </div>
-                <div className="flex md:flex-col gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 md:flex-none gap-2 bg-transparent">
-                    <Download className="w-4 h-4" />
-                    Relatório
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

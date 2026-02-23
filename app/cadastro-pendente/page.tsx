@@ -15,7 +15,21 @@ interface CadastroPendente {
 
 export default function CadastroPendentePage() {
   const [cadastroData, setCadastroData] = useState<CadastroPendente | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [erro, setErro] = useState("")
   const router = useRouter()
+
+  // ✅ BASE DA SUA API NA HOSTINGER
+  const API_BASE = "https://provence.host/api/api_provence/api"
+
+  // ✅ ENDPOINT (conforme seus prints: api/login.php, api/register.php, etc)
+  // A ideia aqui: consultar no backend se o cadastro ainda está pendente / já foi aprovado.
+  // Se no seu backend esse endpoint tiver outro nome, me fala qual é e eu ajusto.
+  const ENDPOINTS = {
+    // tenta checar o status do usuário (pendente/aprovado) a partir do email
+    // OBS: se você NÃO tiver esse arquivo no servidor, esse fetch vai falhar e a tela segue só com localStorage (fallback).
+    checarStatusCadastro: `${API_BASE}/usuarios/get_perfil.php`,
+  } as const
 
   useEffect(() => {
     const cadastroPendente = localStorage.getItem("cadastro_pendente")
@@ -26,23 +40,90 @@ export default function CadastroPendentePage() {
       } catch (err) {
         console.error("Erro ao parsear dados do cadastro:", err)
         router.push("/register")
+        return
       }
     } else {
       router.push("/register")
+      return
     }
+
+    // depois de carregar o localStorage, tenta validar com backend
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
+
+  useEffect(() => {
+    const run = async () => {
+      if (!cadastroData?.email) {
+        setLoading(false)
+        return
+      }
+
+      setErro("")
+      setLoading(true)
+
+      // ✅ tenta checar no backend se já foi aprovado (fallback: se der erro, não bloqueia a página)
+      try {
+        const url = new URL(ENDPOINTS.checarStatusCadastro)
+        url.searchParams.set("email", cadastroData.email)
+
+        const res = await fetch(url.toString(), {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
+        })
+
+        if (!res.ok) {
+          // não quebra a tela — só para de carregar
+          setLoading(false)
+          return
+        }
+
+        const json = await res.json()
+
+        // ✅ Tentativas comuns de estrutura
+        const perfil = json?.data ?? json
+
+        // Se seu backend devolver tipo_usuario e/ou status:
+        // - quando aprovar profissional, você provavelmente muda de "pendente" pra "profissional"
+        // - ou marca "aprovado: true"
+        const aprovado =
+          perfil?.aprovado === true ||
+          perfil?.status === "aprovado" ||
+          perfil?.status === "ativo" ||
+          (perfil?.tipo_usuario && perfil?.tipo_usuario !== "pendente")
+
+        if (aprovado) {
+          // se já aprovou, manda pra login (ou direto pra /profissional se você já loga automático)
+          localStorage.removeItem("cadastro_pendente")
+          router.push("/login")
+          return
+        }
+      } catch (e) {
+        // erro silencioso (mantém tela)
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    run()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cadastroData?.email])
 
   const handleVoltarLogin = () => {
     localStorage.removeItem("cadastro_pendente")
     router.push("/login")
   }
 
-  if (!cadastroData) {
+  if (loading || !cadastroData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <Clock className="h-8 w-8 animate-spin text-purple-600 mx-auto mb-4" />
           <p className="text-slate-600">Carregando...</p>
+          {erro && <p className="text-sm text-red-600 mt-2">{erro}</p>}
         </div>
       </div>
     )
@@ -213,8 +294,8 @@ export default function CadastroPendentePage() {
                 <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-amber-200">
                   <p className="text-amber-800 leading-relaxed">
                     O processo de análise leva entre <strong className="text-amber-900">24 a 72 horas úteis</strong>.
-                    Cadastros com documentação completa e correta são processados mais rapidamente. Nossa equipe
-                    trabalha diariamente para garantir agilidade no processo.
+                    Cadastros com documentação completa e correta são processados mais rapidamente. Nossa equipe trabalha
+                    diariamente para garantir agilidade no processo.
                   </p>
                 </div>
               </div>
@@ -247,6 +328,10 @@ export default function CadastroPendentePage() {
                     </div>
                   </div>
                 </div>
+
+                <p className="text-xs text-slate-500 mt-4">
+                  (Info técnica) API configurada: <span className="font-mono">{ENDPOINTS.checarStatusCadastro}</span>
+                </p>
               </div>
             </CardContent>
 

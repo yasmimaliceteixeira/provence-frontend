@@ -1,99 +1,154 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Loader2, Search, Star } from "lucide-react"
 
-// ✅ EXPORTA o tipo (isso resolve o erro 2459)
+const API_BASE = "https://provence.host/api/api_provence/api"
+
 export type Profissional = {
   id: number
-  name: string
-  specialty: string
-  approach?: string
-  avatar?: string
-  price: number
-  gradient?: string
+  nome: string
+  email: string
+  especialidade: string
+  valor_consulta: number
+  bio: string
+  foto_perfil: string
+  crp: string
+  avaliacao_media?: number
 }
 
-export type AgendarConsultaProps = {
+interface Props {
   onScheduleClick: (profissional: Profissional) => void
 }
 
-export function AgendarConsulta({ onScheduleClick }: AgendarConsultaProps) {
+export function AgendarConsulta({ onScheduleClick }: Props) {
   const [profissionais, setProfissionais] = useState<Profissional[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [busca, setBusca] = useState("")
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      try {
-        // ✅ Sem dados fictícios: lista vazia até integrar API real
-        setProfissionais([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    load()
+    fetchProfissionais()
   }, [])
+
+  const fetchProfissionais = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch(`${API_BASE}/profissionais/exibir-profissionais.php`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        credentials: "include",
+      })
+      const data = await res.json()
+      if (data.success || data.status === "success") {
+        setProfissionais(data.profissionais || data.data || [])
+      } else {
+        setError(data.message || "Erro ao carregar profissionais.")
+      }
+    } catch {
+      setError("Erro de conexão ao carregar profissionais.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filtrados = profissionais.filter((p) => {
+    const termo = busca.toLowerCase()
+    return (
+      p.nome.toLowerCase().includes(termo) ||
+      (p.especialidade || "").toLowerCase().includes(termo)
+    )
+  })
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto">
-        <Card className="p-6">
-          <p className="text-sm text-muted-foreground">Carregando profissionais…</p>
-        </Card>
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Agendar consulta</h2>
-        <p className="text-sm text-muted-foreground">Escolha um profissional</p>
+        <h2 className="text-2xl font-bold">{"Agendar Consulta"}</h2>
+        <p className="text-muted-foreground mt-1">{"Escolha um profissional para agendar sua consulta."}</p>
       </div>
 
-      {profissionais.length === 0 ? (
-        <Card className="p-6">
-          <p className="text-sm text-muted-foreground">
-            Nenhum profissional carregado ainda. Conecte seu endpoint para listar aqui.
-          </p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {profissionais.map((p) => (
-            <Card key={p.id} className="p-6 flex items-center gap-4">
-              <Avatar className="w-14 h-14">
-                <AvatarImage src={p.avatar || "/placeholder.svg"} />
-                <AvatarFallback className="bg-violet-500 text-white font-semibold">
-                  {p.name
-                    .split(" ")
-                    .filter(Boolean)
-                    .slice(0, 2)
-                    .map((n: string) => n[0])
-                    .join("")
-                    .toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Buscar por nome ou especialidade..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="pl-10"
+        />
+      </div>
 
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate">{p.name}</p>
-                <p className="text-sm text-muted-foreground truncate">{p.specialty}</p>
-                <p className="text-sm font-semibold mt-1">R$ {Number(p.price || 0).toFixed(2)}</p>
+      {error && (
+        <p className="text-sm text-red-600">{error}</p>
+      )}
+
+      {filtrados.length === 0 && !error && (
+        <p className="text-sm text-muted-foreground">{"Nenhum profissional encontrado."}</p>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtrados.map((prof) => (
+          <Card key={prof.id} className="overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <Avatar className="w-14 h-14">
+                  {prof.foto_perfil && (
+                    <AvatarImage src={prof.foto_perfil} alt={prof.nome} />
+                  )}
+                  <AvatarFallback className="bg-blue-500 text-white">
+                    {prof.nome.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold truncate">{prof.nome}</p>
+                  <p className="text-sm text-muted-foreground">{prof.especialidade || "Psicologia"}</p>
+                  {prof.crp && (
+                    <p className="text-xs text-muted-foreground">{"CRP: " + prof.crp}</p>
+                  )}
+                </div>
+              </div>
+
+              {prof.bio && (
+                <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{prof.bio}</p>
+              )}
+
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center gap-2">
+                  {prof.avaliacao_media && (
+                    <Badge variant="secondary" className="gap-1">
+                      <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                      {prof.avaliacao_media.toFixed(1)}
+                    </Badge>
+                  )}
+                  <Badge variant="outline">
+                    {"R$ " + Number(prof.valor_consulta).toFixed(2).replace(".", ",")}
+                  </Badge>
+                </div>
               </div>
 
               <Button
-                onClick={() => onScheduleClick(p)}
-                className="bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:opacity-90"
+                className="w-full mt-4"
+                onClick={() => onScheduleClick(prof)}
               >
-                Agendar
+                {"Agendar"}
               </Button>
-            </Card>
-          ))}
-        </div>
-      )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }

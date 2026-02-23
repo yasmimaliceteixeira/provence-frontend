@@ -9,6 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Loader2, CheckCircle, AlertCircle, Shield } from "lucide-react"
 
+const API_BASE = "https://provence.host/api/api_provence/api"
+
 interface UserTemp {
   id: number
   nome: string
@@ -40,12 +42,12 @@ export default function TermosUsoPage() {
 
   const handleAceitarTermos = async () => {
     if (!aceito) {
-      setError("Você deve aceitar os termos de uso para continuar")
+      setError("Voc\u00ea deve aceitar os termos de uso para continuar")
       return
     }
 
     if (!user) {
-      setError("Dados do usuário não encontrados")
+      setError("Dados do usu\u00e1rio n\u00e3o encontrados")
       return
     }
 
@@ -53,10 +55,11 @@ export default function TermosUsoPage() {
     setError("")
 
     try {
-      const response = await fetch("http://localhost:80/api/aceitar_termos.php", {
+      const response = await fetch(`${API_BASE}/aceitar_termos.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
           usuario_id: user.id,
@@ -65,9 +68,7 @@ export default function TermosUsoPage() {
       })
 
       if (response.status === 404) {
-        throw new Error(
-          "API não encontrada. Verifique se o servidor PHP está rodando e o arquivo existe em: http://localhost/api/aceitar_termos.php",
-        )
+        throw new Error("API n\u00e3o encontrada.")
       }
 
       if (!response.ok) {
@@ -79,8 +80,8 @@ export default function TermosUsoPage() {
 
       try {
         data = JSON.parse(responseText)
-      } catch (parseError) {
-        throw new Error("Resposta inválida do servidor")
+      } catch {
+        throw new Error("Resposta inv\u00e1lida do servidor")
       }
 
       if (data.success) {
@@ -91,9 +92,9 @@ export default function TermosUsoPage() {
       }
     } catch (err) {
       if (err instanceof Error) {
-        setError(`Erro de conexão: ${err.message}`)
+        setError(`Erro de conex\u00e3o: ${err.message}`)
       } else {
-        setError("Erro de conexão. Tente novamente.")
+        setError("Erro de conex\u00e3o. Tente novamente.")
       }
     } finally {
       setLoading(false)
@@ -113,7 +114,6 @@ export default function TermosUsoPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 flex flex-col relative">
-      {/* Simplified background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200 rounded-full blur-3xl"></div>
@@ -137,7 +137,7 @@ export default function TermosUsoPage() {
                 Termos de Uso
               </CardTitle>
               <CardDescription className="text-slate-600 text-lg font-medium">
-                Olá, {user.nome}! Por favor, leia e aceite nossos termos para continuar
+                {"Ol\u00e1, "}{user.nome}{"! Por favor, leia e aceite nossos termos para continuar"}
               </CardDescription>
             </CardHeader>
 
@@ -147,95 +147,58 @@ export default function TermosUsoPage() {
                   <div>
                     <h3 className="text-lg font-bold text-purple-700 mb-3">1. Termos de Uso</h3>
                     <p className="mb-4">
-                      Bem-vindo à Provence! Estes termos de uso regem o uso de nossa plataforma de terapia online. Ao
-                      usar nossos serviços, você concorda com estes termos.
+                      {"Bem-vindo \u00e0 Provence! Estes termos de uso regem o uso de nossa plataforma de terapia online. Ao usar nossos servi\u00e7os, voc\u00ea concorda com estes termos."}
                     </p>
-
                     <h4 className="font-semibold text-purple-600 mb-2">1.1 Uso da Plataforma</h4>
                     <p className="mb-4">
-                      Nossa plataforma conecta pacientes a profissionais de psicologia licenciados. Você deve usar a
-                      plataforma apenas para fins legítimos e de acordo com estes termos.
+                      {"Nossa plataforma conecta pacientes a profissionais de psicologia licenciados. Voc\u00ea deve usar a plataforma apenas para fins leg\u00edtimos e de acordo com estes termos."}
                     </p>
-
-                    <h4 className="font-semibold text-purple-600 mb-2">1.2 Responsabilidades do Usuário</h4>
+                    <h4 className="font-semibold text-purple-600 mb-2">{"1.2 Responsabilidades do Usu\u00e1rio"}</h4>
                     <ul className="list-disc list-inside space-y-1 mb-4 ml-4">
-                      <li>Fornecer informações precisas e atualizadas</li>
+                      <li>{"Fornecer informa\u00e7\u00f5es precisas e atualizadas"}</li>
                       <li>Manter a confidencialidade de sua conta</li>
-                      <li>Não compartilhar informações pessoais de outros usuários</li>
-                      <li>Respeitar os profissionais e outros usuários</li>
+                      <li>{"N\u00e3o compartilhar informa\u00e7\u00f5es pessoais de outros usu\u00e1rios"}</li>
+                      <li>{"Respeitar os profissionais e outros usu\u00e1rios"}</li>
                     </ul>
                   </div>
-
                   <div>
-                    <h3 className="text-lg font-bold text-purple-700 mb-3">2. Política de Privacidade</h3>
+                    <h3 className="text-lg font-bold text-purple-700 mb-3">2. {"Pol\u00edtica de Privacidade"}</h3>
                     <p className="mb-4">
-                      Sua privacidade é importante para nós. Esta política explica como coletamos, usamos e protegemos
-                      suas informações pessoais.
-                    </p>
-
-                    <h4 className="font-semibold text-purple-600 mb-2">2.1 Informações Coletadas</h4>
-                    <ul className="list-disc list-inside space-y-1 mb-4 ml-4">
-                      <li>Informações de cadastro (nome, email, telefone)</li>
-                      <li>Informações de perfil (endereço, data de nascimento)</li>
-                      <li>Histórico de consultas e comunicações</li>
-                      <li>Dados de uso da plataforma</li>
-                    </ul>
-
-                    <h4 className="font-semibold text-purple-600 mb-2">2.2 Uso das Informações</h4>
-                    <p className="mb-4">
-                      Usamos suas informações para fornecer nossos serviços, melhorar a plataforma, comunicar com você e
-                      garantir a segurança da plataforma.
-                    </p>
-
-                    <h4 className="font-semibold text-purple-600 mb-2">2.3 Compartilhamento de Informações</h4>
-                    <p className="mb-4">
-                      Não vendemos suas informações pessoais. Compartilhamos informações apenas quando necessário para
-                      fornecer nossos serviços ou quando exigido por lei.
+                      {"Sua privacidade \u00e9 importante para n\u00f3s. Esta pol\u00edtica explica como coletamos, usamos e protegemos suas informa\u00e7\u00f5es pessoais."}
                     </p>
                   </div>
-
                   <div>
-                    <h3 className="text-lg font-bold text-purple-700 mb-3">3. Confidencialidade Médica</h3>
+                    <h3 className="text-lg font-bold text-purple-700 mb-3">{"3. Confidencialidade M\u00e9dica"}</h3>
                     <p className="mb-4">
-                      Todas as comunicações entre pacientes e profissionais são confidenciais e protegidas pelo sigilo
-                      profissional, conforme estabelecido pelo Conselho Federal de Psicologia.
+                      {"Todas as comunica\u00e7\u00f5es entre pacientes e profissionais s\u00e3o confidenciais e protegidas pelo sigilo profissional, conforme estabelecido pelo Conselho Federal de Psicologia."}
                     </p>
                   </div>
-
                   <div>
                     <h3 className="text-lg font-bold text-purple-700 mb-3">4. Cancelamento e Reembolso</h3>
                     <p className="mb-4">
-                      Consultas podem ser canceladas até 24 horas antes do horário agendado para reembolso total.
-                      Cancelamentos com menos de 24 horas podem estar sujeitos a taxas.
+                      {"Consultas podem ser canceladas at\u00e9 24 horas antes do hor\u00e1rio agendado para reembolso total. Cancelamentos com menos de 24 horas podem estar sujeitos a taxas."}
                     </p>
                   </div>
-
                   <div>
-                    <h3 className="text-lg font-bold text-purple-700 mb-3">5. Limitação de Responsabilidade</h3>
+                    <h3 className="text-lg font-bold text-purple-700 mb-3">{"5. Limita\u00e7\u00e3o de Responsabilidade"}</h3>
                     <p className="mb-4">
-                      A Provence atua como intermediária entre pacientes e profissionais. Não somos responsáveis pelo
-                      conteúdo das sessões de terapia ou pelos resultados do tratamento.
+                      {"A Provence atua como intermedi\u00e1ria entre pacientes e profissionais. N\u00e3o somos respons\u00e1veis pelo conte\u00fado das sess\u00f5es de terapia ou pelos resultados do tratamento."}
                     </p>
                   </div>
-
                   <div>
-                    <h3 className="text-lg font-bold text-purple-700 mb-3">6. Alterações nos Termos</h3>
+                    <h3 className="text-lg font-bold text-purple-700 mb-3">{"6. Altera\u00e7\u00f5es nos Termos"}</h3>
                     <p className="mb-4">
-                      Podemos atualizar estes termos periodicamente. Notificaremos sobre mudanças significativas e sua
-                      continuação do uso da plataforma constitui aceitação dos novos termos.
+                      {"Podemos atualizar estes termos periodicamente. Notificaremos sobre mudan\u00e7as significativas e sua continua\u00e7\u00e3o do uso da plataforma constitui aceita\u00e7\u00e3o dos novos termos."}
                     </p>
                   </div>
-
                   <div>
                     <h3 className="text-lg font-bold text-purple-700 mb-3">7. Contato</h3>
                     <p className="mb-4">
-                      Para dúvidas sobre estes termos, entre em contato conosco através do email: suporte@provence.com
-                      ou telefone: (11) 9999-9999.
+                      {"Para d\u00favidas sobre estes termos, entre em contato conosco atrav\u00e9s do email: suporte@provence.com ou telefone: (11) 9999-9999."}
                     </p>
                   </div>
-
                   <p className="text-xs text-slate-500 mt-8 pt-4 border-t border-slate-200">
-                    Última atualização: {new Date().toLocaleDateString("pt-BR")}
+                    {"\u00daltima atualiza\u00e7\u00e3o: "}{new Date().toLocaleDateString("pt-BR")}
                   </p>
                 </div>
               </ScrollArea>
@@ -254,7 +217,7 @@ export default function TermosUsoPage() {
                   htmlFor="aceitar-termos"
                   className="text-sm font-medium leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-700 cursor-pointer"
                 >
-                  Li e aceito os Termos de Uso e Política de Privacidade
+                  {"Li e aceito os Termos de Uso e Pol\u00edtica de Privacidade"}
                 </label>
               </div>
 
@@ -288,7 +251,7 @@ export default function TermosUsoPage() {
 
             <CardFooter className="text-center pt-4 pb-8 relative z-10">
               <p className="text-sm text-slate-600 w-full">
-                Ao aceitar, você será direcionado para a tela de login para acessar sua conta
+                {"Ao aceitar, voc\u00ea ser\u00e1 direcionado para a tela de login para acessar sua conta"}
               </p>
             </CardFooter>
           </Card>

@@ -1,391 +1,207 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { Mail, Phone, MapPin, Calendar, Edit, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/hooks/use-toast"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Loader2, Save } from "lucide-react"
 
-const API_URL = "http://localhost/api"
+const API_BASE = "https://provence.host/api/api_provence/api"
 
-interface UserProfile {
-  id: number
+type Perfil = {
   nome: string
   email: string
-  telefone?: string
-  cpf?: string
-  data_nascimento?: string
-  tipo_usuario: string
-  foto_perfil?: string
-  crp?: string
-  especialidade?: string
-  valor_consulta?: number
-  experiencia_anos?: number
-  descricao?: string
-  localizacao?: string
+  telefone: string
+  cpf: string
+  data_nascimento: string
 }
 
 export function MeuPerfil() {
-  const { toast } = useToast()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [perfil, setPerfil] = useState<Perfil>({
+    nome: "",
+    email: "",
+    telefone: "",
+    cpf: "",
+    data_nascimento: "",
+  })
   const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [formData, setFormData] = useState<Partial<UserProfile>>({})
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
   useEffect(() => {
-    fetchProfile()
+    fetchPerfil()
   }, [])
 
-  const fetchProfile = async () => {
+  const fetchPerfil = async () => {
+    setLoading(true)
+    setError("")
     try {
-      setLoading(true)
-      const response = await fetch(`${API_URL}/perfil.php`, {
+      const token = localStorage.getItem("token") || ""
+      const res = await fetch(`${API_BASE}/usuarios/get_perfil.php`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       })
-      const data = await response.json()
-
-      if (data.success) {
-        setProfile(data.data)
-        setFormData(data.data)
-      } else {
-        toast({
-          title: "Erro",
-          description: data.message || "Erro ao carregar perfil",
-          variant: "destructive",
+      const data = await res.json()
+      if (data.success || data.status === "success") {
+        const p = data.usuario || data.perfil || data.data || {}
+        setPerfil({
+          nome: p.nome || "",
+          email: p.email || "",
+          telefone: p.telefone || "",
+          cpf: p.cpf || "",
+          data_nascimento: p.data_nascimento || "",
         })
+      } else {
+        setError(data.message || "Erro ao carregar perfil.")
       }
-    } catch (error) {
-      console.error("Erro ao buscar perfil:", error)
-      toast({
-        title: "Erro",
-        description: "Erro ao conectar com o servidor",
-        variant: "destructive",
-      })
+    } catch {
+      setError("Erro de conexão ao carregar perfil.")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleSaveProfile = async () => {
+  const handleSave = async () => {
+    setSaving(true)
+    setError("")
+    setSuccess("")
     try {
-      const response = await fetch(`${API_URL}/atualizar-perfil.php`, {
+      const token = localStorage.getItem("token") || ""
+      const res = await fetch(`${API_BASE}/usuarios/atualizar_perfil.php`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        toast({
-          title: "Sucesso",
-          description: "Perfil atualizado com sucesso",
-        })
-        setEditing(false)
-        fetchProfile()
-      } else {
-        toast({
-          title: "Erro",
-          description: data.message || "Erro ao atualizar perfil",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Erro ao atualizar perfil:", error)
-      toast({
-        title: "Erro",
-        description: "Erro ao conectar com o servidor",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    try {
-      setUploading(true)
-      const formDataUpload = new FormData()
-      formDataUpload.append("foto_perfil", file)
-
-      const response = await fetch(`${API_URL}/upload-foto.php`, {
-        method: "POST",
         credentials: "include",
-        body: formDataUpload,
+        body: JSON.stringify(perfil),
       })
-
-      const data = await response.json()
-
-      if (data.success) {
-        toast({
-          title: "Sucesso",
-          description: "Foto atualizada com sucesso",
-        })
-        fetchProfile()
+      const data = await res.json()
+      if (data.success || data.status === "success") {
+        setSuccess(data.message || "Perfil atualizado com sucesso!")
+        // Atualiza o localStorage também
+        const raw = localStorage.getItem("user") || localStorage.getItem("usuario")
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw)
+            const updated = { ...parsed, nome: perfil.nome, email: perfil.email }
+            const key = localStorage.getItem("user") ? "user" : "usuario"
+            localStorage.setItem(key, JSON.stringify(updated))
+          } catch {
+            // ignora
+          }
+        }
       } else {
-        toast({
-          title: "Erro",
-          description: data.message || "Erro ao fazer upload da foto",
-          variant: "destructive",
-        })
+        setError(data.message || "Erro ao atualizar perfil.")
       }
-    } catch (error) {
-      console.error("Erro ao fazer upload:", error)
-      toast({
-        title: "Erro",
-        description: "Erro ao conectar com o servidor",
-        variant: "destructive",
-      })
+    } catch {
+      setError("Erro de conexão ao atualizar perfil.")
     } finally {
-      setUploading(false)
+      setSaving(false)
     }
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
-  if (!profile) {
-    return <div className="text-center text-gray-500">Erro ao carregar perfil</div>
-  }
-
   return (
-    <div className="space-y-6">
-      <Card className="bg-white border-0 shadow-md">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="flex flex-col items-center gap-4">
-              <Avatar className="w-32 h-32">
-                <AvatarImage src={profile.foto_perfil || "/placeholder.svg"} />
-                <AvatarFallback className="bg-purple-600 text-white text-3xl">
-                  {profile.nome
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  disabled={uploading}
-                  className="hidden"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 bg-transparent cursor-pointer"
-                  disabled={uploading}
-                  asChild
-                >
-                  <span>
-                    <Edit className="w-4 h-4" />
-                    {uploading ? "Enviando..." : "Alterar Foto"}
-                  </span>
-                </Button>
-              </label>
-            </div>
-            <div className="flex-1 space-y-4">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">{profile.nome}</h2>
-                <p className="text-gray-500">{profile.tipo_usuario === "profissional" ? "Profissional" : "Paciente"}</p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 text-gray-600">
-                  <Mail className="w-5 h-5 text-purple-600" />
-                  <span>{profile.email}</span>
-                </div>
-                {profile.telefone && (
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <Phone className="w-5 h-5 text-blue-600" />
-                    <span>{profile.telefone}</span>
-                  </div>
-                )}
-                {profile.data_nascimento && (
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <Calendar className="w-5 h-5 text-orange-600" />
-                    <span>{new Date(profile.data_nascimento).toLocaleDateString("pt-BR")}</span>
-                  </div>
-                )}
-                {profile.localizacao && (
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <MapPin className="w-5 h-5 text-green-600" />
-                    <span>{profile.localizacao}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-6 max-w-2xl">
+      <div>
+        <h2 className="text-2xl font-bold">{"Meu Perfil"}</h2>
+        <p className="text-muted-foreground mt-1">{"Visualize e edite suas informações pessoais."}</p>
+      </div>
 
-      <Card className="bg-white border-0 shadow-md">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Informações Pessoais</CardTitle>
-          <Button variant="outline" size="sm" onClick={() => setEditing(!editing)} className="bg-transparent">
-            {editing ? "Cancelar" : "Editar"}
-          </Button>
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert>
+          <AlertDescription className="text-emerald-700">{success}</AlertDescription>
+        </Alert>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{"Informações Pessoais"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="nome">Nome Completo</Label>
+              <Label htmlFor="nome">{"Nome"}</Label>
               <Input
                 id="nome"
-                name="nome"
-                value={formData.nome || ""}
-                onChange={handleInputChange}
-                disabled={!editing}
+                value={perfil.nome}
+                onChange={(e) => setPerfil({ ...perfil, nome: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{"E-mail"}</Label>
               <Input
                 id="email"
-                name="email"
                 type="email"
-                value={formData.email || ""}
-                onChange={handleInputChange}
-                disabled={!editing}
+                value={perfil.email}
+                onChange={(e) => setPerfil({ ...perfil, email: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="telefone">Telefone</Label>
+              <Label htmlFor="telefone">{"Telefone"}</Label>
               <Input
                 id="telefone"
-                name="telefone"
-                value={formData.telefone || ""}
-                onChange={handleInputChange}
-                disabled={!editing}
+                value={perfil.telefone}
+                onChange={(e) => setPerfil({ ...perfil, telefone: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="data_nascimento">Data de Nascimento</Label>
+              <Label htmlFor="cpf">{"CPF"}</Label>
               <Input
-                id="data_nascimento"
-                name="data_nascimento"
-                type="date"
-                value={formData.data_nascimento || ""}
-                onChange={handleInputChange}
-                disabled={!editing}
+                id="cpf"
+                value={perfil.cpf}
+                disabled
               />
             </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="cpf">CPF</Label>
-              <Input id="cpf" name="cpf" value={formData.cpf || ""} onChange={handleInputChange} disabled={!editing} />
+            <div className="space-y-2">
+              <Label htmlFor="nascimento">{"Data de Nascimento"}</Label>
+              <Input
+                id="nascimento"
+                type="date"
+                value={perfil.data_nascimento}
+                onChange={(e) => setPerfil({ ...perfil, data_nascimento: e.target.value })}
+              />
             </div>
           </div>
-          {editing && (
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setEditing(false)}>
-                Cancelar
-              </Button>
-              <Button className="bg-purple-600 hover:bg-purple-700" onClick={handleSaveProfile}>
-                Salvar Alterações
-              </Button>
-            </div>
-          )}
+
+          <div className="flex justify-end pt-4">
+            <Button onClick={handleSave} disabled={saving} className="gap-2">
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {"Salvando..."}
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  {"Salvar Alterações"}
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
-
-      {profile.tipo_usuario === "profissional" && (
-        <Card className="bg-white border-0 shadow-md">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Informações Profissionais</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="crp">CRP</Label>
-                <Input
-                  id="crp"
-                  name="crp"
-                  value={formData.crp || ""}
-                  onChange={handleInputChange}
-                  disabled={!editing}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="especialidade">Especialidade</Label>
-                <Input
-                  id="especialidade"
-                  name="especialidade"
-                  value={formData.especialidade || ""}
-                  onChange={handleInputChange}
-                  disabled={!editing}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="valor_consulta">Valor da Consulta (R$)</Label>
-                <Input
-                  id="valor_consulta"
-                  name="valor_consulta"
-                  type="number"
-                  value={formData.valor_consulta || ""}
-                  onChange={handleInputChange}
-                  disabled={!editing}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="experiencia_anos">Anos de Experiência</Label>
-                <Input
-                  id="experiencia_anos"
-                  name="experiencia_anos"
-                  type="number"
-                  value={formData.experiencia_anos || ""}
-                  onChange={handleInputChange}
-                  disabled={!editing}
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="descricao">Descrição/Bio</Label>
-                <textarea
-                  id="descricao"
-                  name="descricao"
-                  value={formData.descricao || ""}
-                  onChange={handleInputChange}
-                  disabled={!editing}
-                  className="w-full p-2 border rounded-md disabled:bg-gray-100"
-                  rows={4}
-                />
-              </div>
-            </div>
-            {editing && (
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setEditing(false)}>
-                  Cancelar
-                </Button>
-                <Button className="bg-purple-600 hover:bg-purple-700" onClick={handleSaveProfile}>
-                  Salvar Alterações
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

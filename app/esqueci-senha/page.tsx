@@ -11,6 +11,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Mail, ArrowLeft, CheckCircle, Loader2, Key, Shield, Lock } from "lucide-react"
 import Link from "next/link"
 
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") || "https://provence.host/api/api_provence/api"
+
 export default function EsqueciSenhaPage() {
   const [step, setStep] = useState<"email" | "nova-senha">("email")
   const [email, setEmail] = useState("")
@@ -33,7 +37,8 @@ export default function EsqueciSenhaPage() {
     setSuccess("")
 
     try {
-      const response = await fetch("http://localhost/api/verificar_email.php", {
+      // ✅ API: api/api_provence/api/verificar_email.php
+      const response = await fetch(`${API_BASE}/verificar_email.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,11 +56,13 @@ export default function EsqueciSenhaPage() {
           setError("Email não encontrado em nosso sistema")
         }
       } else {
+        // mantém seu comportamento atual (fallback)
         setSuccess("Email encontrado! Agora você pode definir uma nova senha.")
         setStep("nova-senha")
       }
     } catch (err) {
       console.error("Erro ao verificar email:", err)
+      // mantém seu comportamento atual (fallback)
       setSuccess("Email encontrado! Agora você pode definir uma nova senha.")
       setStep("nova-senha")
     } finally {
@@ -86,7 +93,8 @@ export default function EsqueciSenhaPage() {
     setSuccess("")
 
     try {
-      const response = await fetch("http://localhost/api/redefinir_senha.php", {
+      // ✅ API: api/api_provence/api/redefinir_senha.php
+      const response = await fetch(`${API_BASE}/redefinir_senha.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -137,11 +145,7 @@ export default function EsqueciSenhaPage() {
                 <div className="relative">
                   <div className="w-20 h-20 bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl">
                     <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center">
-                      {step === "email" ? (
-                        <Mail className="h-8 w-8 text-white" />
-                      ) : (
-                        <Shield className="h-8 w-8 text-white" />
-                      )}
+                      {step === "email" ? <Mail className="h-8 w-8 text-white" /> : <Shield className="h-8 w-8 text-white" />}
                     </div>
                   </div>
                   <div className="absolute -inset-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-20 animate-pulse"></div>
@@ -152,9 +156,7 @@ export default function EsqueciSenhaPage() {
                 {step === "email" ? "Recuperar Senha" : "Nova Senha"}
               </CardTitle>
               <CardDescription className="text-slate-600 text-lg font-medium">
-                {step === "email"
-                  ? "Digite seu email para redefinir sua senha"
-                  : "Crie uma nova senha segura para sua conta"}
+                {step === "email" ? "Digite seu email para redefinir sua senha" : "Crie uma nova senha segura para sua conta"}
               </CardDescription>
             </CardHeader>
 
@@ -211,10 +213,7 @@ export default function EsqueciSenhaPage() {
               ) : (
                 <form onSubmit={handleRedefinirSenha} className="space-y-6">
                   <div className="space-y-3">
-                    <Label
-                      htmlFor="nova-senha"
-                      className="text-slate-700 font-semibold flex items-center gap-2 text-sm"
-                    >
+                    <Label htmlFor="nova-senha" className="text-slate-700 font-semibold flex items-center gap-2 text-sm">
                       <Lock className="h-4 w-4 text-purple-600" />
                       Nova senha
                     </Label>
@@ -231,10 +230,7 @@ export default function EsqueciSenhaPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <Label
-                      htmlFor="confirmar-senha"
-                      className="text-slate-700 font-semibold flex items-center gap-2 text-sm"
-                    >
+                    <Label htmlFor="confirmar-senha" className="text-slate-700 font-semibold flex items-center gap-2 text-sm">
                       <Key className="h-4 w-4 text-purple-600" />
                       Confirmar nova senha
                     </Label>
@@ -255,16 +251,16 @@ export default function EsqueciSenhaPage() {
                     <h4 className="text-sm font-semibold text-slate-700 mb-2">Requisitos da senha:</h4>
                     <ul className="text-xs text-slate-600 space-y-1">
                       <li className={`flex items-center gap-2 ${novaSenha.length >= 6 ? "text-emerald-600" : ""}`}>
-                        <div
-                          className={`w-2 h-2 rounded-full ${novaSenha.length >= 6 ? "bg-emerald-500" : "bg-slate-300"}`}
-                        ></div>
+                        <div className={`w-2 h-2 rounded-full ${novaSenha.length >= 6 ? "bg-emerald-500" : "bg-slate-300"}`}></div>
                         Pelo menos 6 caracteres
                       </li>
                       <li
                         className={`flex items-center gap-2 ${novaSenha === confirmarSenha && novaSenha.length > 0 ? "text-emerald-600" : ""}`}
                       >
                         <div
-                          className={`w-2 h-2 rounded-full ${novaSenha === confirmarSenha && novaSenha.length > 0 ? "bg-emerald-500" : "bg-slate-300"}`}
+                          className={`w-2 h-2 rounded-full ${
+                            novaSenha === confirmarSenha && novaSenha.length > 0 ? "bg-emerald-500" : "bg-slate-300"
+                          }`}
                         ></div>
                         Senhas coincidem
                       </li>
@@ -315,6 +311,7 @@ export default function EsqueciSenhaPage() {
                 </form>
               )}
             </CardContent>
+
 
             <CardFooter className="text-center pt-4 pb-8 relative z-10">
               <p className="text-slate-600 w-full">
