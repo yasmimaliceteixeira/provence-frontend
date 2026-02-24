@@ -120,64 +120,70 @@ export default function CadastroPage() {
     return null
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+      const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault()
 
-    const validationError = validateForm()
-    if (validationError) {
-      setError(validationError)
-      return
+      const validationError = validateForm()
+      if (validationError) {
+        setError(validationError)
+        return
+      }
+
+      setLoading(true)
+      setError("")
+
+      try {
+        const submitData: any = {
+          nome: form.nome.trim(),
+          email: form.email.trim(),
+          senha: form.senha,
+          telefone: form.telefone.trim(),
+          cpf: form.cpf.trim(),
+          tipo_usuario: form.tipo_usuario,
+        }
+
+        if (form.tipo_usuario === "profissional") {
+          Object.assign(submitData, {
+            especialidade: form.especialidade,
+            numero_crp: form.numero_crp.trim(),
+            valor_consulta: Number.parseFloat(
+              form.valor_consulta.replace(/[^\d,]/g, "").replace(",", ".")
+            ),
+            bio: form.bio.trim(),
+          })
+        }
+
+        const response = await fetch(
+          "https://provence.host/api/api_provence/api/auth/register.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(submitData),
+            credentials: "include",
+          }
+        )
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    setLoading(true)
-    setError("")
+    const data = await response.json()
 
-    try {
-      const submitData = {
-        nome: form.nome.trim(),
-        email: form.email.trim(),
-        senha: form.senha,
-        telefone: form.telefone.trim(),
-        cpf: form.cpf.trim(),
-        tipo_usuario: form.tipo_usuario,
-      }
-
-      if (form.tipo_usuario === "profissional") {
-        Object.assign(submitData, {
-          especialidade: form.especialidade,
-          numero_crp: form.numero_crp.trim(),
-          valor_consulta: Number.parseFloat(form.valor_consulta.replace(/[^\d,]/g, "").replace(",", ".")),
-          bio: form.bio.trim(),
-        })
-      }
-
-        const response = await fetch("https://provence.host/api/api_provence/api/auth/register.php", { 
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submitData),
-        credentials: "include",
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      if (data.success) {
-        localStorage.setItem("user_temp", JSON.stringify(data.data))
-        router.push("/completar-perfil")
-      } else {
-        setError(data.message || "Erro ao registrar.")
-      }
-    } catch (err) {
-      setError("Erro de conexão. Verifique se o servidor está funcionando.")
-    } finally {
-      setLoading(false)
+    if (data.success) {
+      localStorage.setItem("user_temp", JSON.stringify(data.data))
+      router.push("/completar-perfil")
+    } else {
+      setError(data.message || "Erro ao registrar.")
     }
+  } catch (err) {
+    console.error("Erro no cadastro:", err)
+    setError("Erro de conexão. Verifique se o servidor está funcionando.")
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 flex flex-col relative">
