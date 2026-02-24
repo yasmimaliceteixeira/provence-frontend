@@ -1,9 +1,6 @@
 "use client"
 
 import { useState } from "react"
-// Importações dos componentes
-// Nota: Se o erro persistir, verifique se o arquivo gerenciar-agenda usa 'export default' 
-// ou 'export function GerenciarAgenda'
 import { GerenciarAgenda } from "@/components/profissional/gerenciar-agenda"
 import { ConsultasMarcadasPro } from "@/components/profissional/consultas-marcadas-pro"
 import { ChatProfessional } from "@/components/profissional/chat-professional"
