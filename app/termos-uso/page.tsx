@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Loader2, CheckCircle, AlertCircle, Shield } from "lucide-react"
 
-const API_BASE = "https://provence.host/api/api_provence/api"
+const API_BASE = "https://provence.host"
 
 interface UserTemp {
   id: number
