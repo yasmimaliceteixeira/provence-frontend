@@ -13,7 +13,7 @@ import Link from "next/link"
 
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") || "https://provence.host/api/api_provence/api"
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") || "https://provence.host/redefinir_senha.php"
 
 export default function EsqueciSenhaPage() {
   const [step, setStep] = useState<"email" | "nova-senha">("email")
