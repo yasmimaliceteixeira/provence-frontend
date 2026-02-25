@@ -154,7 +154,7 @@ export default function CadastroPage() {
         }
 
         const response = await fetch(
-          "https://provence.host/api/api_provence/api/auth/register.php",
+          "https://provence.host/auth/register.php",
           {
             method: "POST",
             headers: {
