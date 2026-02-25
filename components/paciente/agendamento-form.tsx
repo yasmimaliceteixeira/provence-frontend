@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, CalendarDays, Clock, Loader2 } from "lucide-react"
 import type { Profissional } from "./agendar-consulta"
 
-const API_BASE = "https://provence.host/api/api_provence/api"
+const API_BASE = "https://provence.host"
 
 interface Props {
   profissional: Profissional
