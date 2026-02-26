@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Save } from "lucide-react"
-
-const API_BASE = "https://provence.host/api/api_provence/api"
+import { API_BASE } from "@/lib/api-config"
 
 type Perfil = {
   nome: string
@@ -87,7 +86,6 @@ export function MeuPerfil() {
       const data = await res.json()
       if (data.success || data.status === "success") {
         setSuccess(data.message || "Perfil atualizado com sucesso!")
-        // Atualiza o localStorage também
         const raw = localStorage.getItem("user") || localStorage.getItem("usuario")
         if (raw) {
           try {

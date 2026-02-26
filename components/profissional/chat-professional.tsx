@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
 import { Search, Send, Paperclip, Smile, MoreVertical, Phone, Video, Info } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -73,41 +72,11 @@ const contacts: Contact[] = [
 ]
 
 const mockMessages: Message[] = [
-  {
-    id: "1",
-    senderId: "1",
-    content: "Bom dia, doutor! Tudo bem?",
-    timestamp: "10:15",
-    type: "text",
-  },
-  {
-    id: "2",
-    senderId: "professional",
-    content: "Bom dia, Maria! Tudo ótimo, e você?",
-    timestamp: "10:16",
-    type: "text",
-  },
-  {
-    id: "3",
-    senderId: "1",
-    content: "Estou bem! Queria agradecer pela sessão de hoje, me ajudou muito.",
-    timestamp: "10:17",
-    type: "text",
-  },
-  {
-    id: "4",
-    senderId: "professional",
-    content: "Fico muito feliz em saber! Continue praticando os exercícios que conversamos.",
-    timestamp: "10:18",
-    type: "text",
-  },
-  {
-    id: "5",
-    senderId: "1",
-    content: "Com certeza! Obrigada pela sessão de hoje!",
-    timestamp: "10:30",
-    type: "text",
-  },
+  { id: "1", senderId: "1", content: "Bom dia, doutor! Tudo bem?", timestamp: "10:15", type: "text" },
+  { id: "2", senderId: "professional", content: "Bom dia, Maria! Tudo ótimo, e você?", timestamp: "10:16", type: "text" },
+  { id: "3", senderId: "1", content: "Estou bem! Queria agradecer pela sessão de hoje, me ajudou muito.", timestamp: "10:17", type: "text" },
+  { id: "4", senderId: "professional", content: "Fico muito feliz em saber! Continue praticando os exercícios que conversamos.", timestamp: "10:18", type: "text" },
+  { id: "5", senderId: "1", content: "Com certeza! Obrigada pela sessão de hoje!", timestamp: "10:30", type: "text" },
 ]
 
 export function ChatProfessional() {
@@ -116,7 +85,9 @@ export function ChatProfessional() {
   const [newMessage, setNewMessage] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
 
-  const filteredContacts = contacts.filter((contact) => contact.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredContacts = contacts.filter((contact) =>
+    contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return
@@ -152,12 +123,9 @@ export function ChatProfessional() {
 
           <ScrollArea className="flex-1">
             <div className="p-2">
-              {filteredContacts.map((contact, index) => (
-                <motion.button
+              {filteredContacts.map((contact) => (
+                <button
                   key={contact.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
                   onClick={() => setSelectedContact(contact)}
                   className={cn(
                     "w-full p-4 rounded-xl flex items-start gap-3 transition-all mb-2",
@@ -170,10 +138,7 @@ export function ChatProfessional() {
                     <Avatar className="w-12 h-12 border-2 border-primary/20">
                       <AvatarImage src={contact.avatar || "/placeholder.svg"} />
                       <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
-                        {contact.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
+                        {contact.name.split(" ").map((n) => n[0]).join("")}
                       </AvatarFallback>
                     </Avatar>
                     {contact.online && (
@@ -192,7 +157,7 @@ export function ChatProfessional() {
                       {contact.unread}
                     </Badge>
                   )}
-                </motion.button>
+                </button>
               ))}
             </div>
           </ScrollArea>
@@ -207,10 +172,7 @@ export function ChatProfessional() {
                 <Avatar className="w-12 h-12 border-2 border-primary/20">
                   <AvatarImage src={selectedContact.avatar || "/placeholder.svg"} />
                   <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
-                    {selectedContact.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                    {selectedContact.name.split(" ").map((n) => n[0]).join("")}
                   </AvatarFallback>
                 </Avatar>
                 {selectedContact.online && (
@@ -241,14 +203,11 @@ export function ChatProfessional() {
           {/* Messages */}
           <ScrollArea className="flex-1 p-6">
             <div className="space-y-4">
-              {messages.map((message, index) => {
+              {messages.map((message) => {
                 const isOwn = message.senderId === "professional"
                 return (
-                  <motion.div
+                  <div
                     key={message.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
                     className={cn("flex", isOwn ? "justify-end" : "justify-start")}
                   >
                     <div className={cn("flex gap-3 max-w-[70%]", isOwn && "flex-row-reverse")}>
@@ -256,10 +215,7 @@ export function ChatProfessional() {
                         <Avatar className="w-8 h-8 border-2 border-primary/20">
                           <AvatarImage src={selectedContact.avatar || "/placeholder.svg"} />
                           <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-xs">
-                            {selectedContact.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {selectedContact.name.split(" ").map((n) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                       )}
@@ -277,7 +233,7 @@ export function ChatProfessional() {
                         <span className="text-xs text-muted-foreground mt-1">{message.timestamp}</span>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 )
               })}
             </div>

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
 import { Calendar, Clock, FileText, Download, Search, Filter } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -34,8 +33,7 @@ const historySessions: HistorySession[] = [
     time: "09:00",
     duration: 60,
     sessionNumber: 3,
-    notes:
-      "Paciente demonstrou progresso significativo no manejo da ansiedade. Continuamos trabalhando técnicas de respiração e mindfulness.",
+    notes: "Paciente demonstrou progresso significativo no manejo da ansiedade. Continuamos trabalhando técnicas de respiração e mindfulness.",
     type: "video",
   },
   {
@@ -45,8 +43,7 @@ const historySessions: HistorySession[] = [
     time: "14:00",
     duration: 50,
     sessionNumber: 1,
-    notes:
-      "Primeira sessão. Paciente relatou dificuldades com sono e estresse no trabalho. Estabelecemos objetivos terapêuticos.",
+    notes: "Primeira sessão. Paciente relatou dificuldades com sono e estresse no trabalho. Estabelecemos objetivos terapêuticos.",
     type: "presencial",
   },
   {
@@ -56,8 +53,7 @@ const historySessions: HistorySession[] = [
     time: "11:00",
     duration: 60,
     sessionNumber: 4,
-    notes:
-      "Discussão sobre relacionamentos interpessoais. Paciente mostrou insights importantes sobre padrões de comportamento.",
+    notes: "Discussão sobre relacionamentos interpessoais. Paciente mostrou insights importantes sobre padrões de comportamento.",
     type: "presencial",
   },
   {
@@ -135,62 +131,52 @@ export function HistoricoProfessional() {
 
       {/* Sessions List */}
       <div className="grid gap-4">
-        {filteredSessions.map((session, index) => (
-          <motion.div
-            key={session.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-          >
-            <Card className="glass p-6 border-border/50 hover:shadow-xl transition-all cursor-pointer">
-              <div className="flex items-start gap-4">
-                <Avatar className="w-14 h-14 border-2 border-primary/20">
-                  <AvatarImage src={session.patient.avatar || "/placeholder.svg"} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-semibold">
-                    {session.patient.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
+        {filteredSessions.map((session) => (
+          <Card key={session.id} className="glass p-6 border-border/50 hover:shadow-xl transition-all cursor-pointer">
+            <div className="flex items-start gap-4">
+              <Avatar className="w-14 h-14 border-2 border-primary/20">
+                <AvatarImage src={session.patient.avatar || "/placeholder.svg"} />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-semibold">
+                  {session.patient.name.split(" ").map((n) => n[0]).join("")}
+                </AvatarFallback>
+              </Avatar>
 
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold text-lg">{session.patient.name}</h4>
-                      <p className="text-sm text-muted-foreground">Sessão #{session.sessionNumber}</p>
-                    </div>
-                    <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
-                      {session.type === "video" ? "Videochamada" : "Presencial"}
-                    </Badge>
+              <div className="flex-1">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h4 className="font-semibold text-lg">{session.patient.name}</h4>
+                    <p className="text-sm text-muted-foreground">{"Sessão #" + session.sessionNumber}</p>
                   </div>
-
-                  <div className="flex items-center gap-4 mb-3 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {new Date(session.date).toLocaleDateString("pt-BR")}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {session.time} - {session.duration} min
-                    </div>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{session.notes}</p>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl bg-transparent"
-                    onClick={() => setSelectedSession(session)}
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Ver Notas Completas
-                  </Button>
+                  <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+                    {session.type === "video" ? "Videochamada" : "Presencial"}
+                  </Badge>
                 </div>
+
+                <div className="flex items-center gap-4 mb-3 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {new Date(session.date).toLocaleDateString("pt-BR")}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    {session.time + " - " + session.duration + " min"}
+                  </div>
+                </div>
+
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{session.notes}</p>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl bg-transparent"
+                  onClick={() => setSelectedSession(session)}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Ver Notas Completas
+                </Button>
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </Card>
         ))}
       </div>
 
@@ -207,15 +193,12 @@ export function HistoricoProfessional() {
                   <Avatar className="w-16 h-16 border-2 border-primary/20">
                     <AvatarImage src={selectedSession.patient.avatar || "/placeholder.svg"} />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-semibold">
-                      {selectedSession.patient.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {selectedSession.patient.name.split(" ").map((n) => n[0]).join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{selectedSession.patient.name}</h3>
-                    <p className="text-sm text-muted-foreground">Sessão #{selectedSession.sessionNumber}</p>
+                    <p className="text-sm text-muted-foreground">{"Sessão #" + selectedSession.sessionNumber}</p>
                   </div>
                   <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
                     {selectedSession.type === "video" ? "Videochamada" : "Presencial"}
@@ -241,9 +224,7 @@ export function HistoricoProfessional() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Horário e Duração</p>
-                        <p className="font-semibold">
-                          {selectedSession.time} - {selectedSession.duration} min
-                        </p>
+                        <p className="font-semibold">{selectedSession.time + " - " + selectedSession.duration + " min"}</p>
                       </div>
                     </div>
                   </Card>

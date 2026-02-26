@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Calendar, CreditCard, User } from "lucide-react"
-
-const API_BASE = "https://provence.host/api/api_provence/api"
+import { API_BASE } from "@/lib/api-config"
 
 type Consulta = {
   id: number
@@ -35,7 +34,7 @@ export function PagamentosPage() {
     setError("")
     try {
       const token = localStorage.getItem("token") || ""
-      const res = await fetch(`${API_BASE}/listar_consultas.php`, {
+      const res = await fetch(`${API_BASE}/paciente/get_all_consultas.php`, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -92,7 +91,7 @@ export function PagamentosPage() {
     setActionMsg("")
     try {
       const token = localStorage.getItem("token") || ""
-      const res = await fetch(`${API_BASE}/solicitar_reembolso.php`, {
+      const res = await fetch(`${API_BASE}/paciente/solicitar_reembolso.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +124,7 @@ export function PagamentosPage() {
       case "reembolsado":
         return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">{"Reembolsado"}</Badge>
       default:
-        return <Badge variant="secondary">{status || "—"}</Badge>
+        return <Badge variant="secondary">{status || "\u2014"}</Badge>
     }
   }
 

@@ -8,8 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, CalendarDays, Clock, Loader2 } from "lucide-react"
 import type { Profissional } from "./agendar-consulta"
-
-const API_BASE = "https://provence.host"
+import { API_BASE } from "@/lib/api-config"
 
 interface Props {
   profissional: Profissional
@@ -39,7 +38,7 @@ export function AgendamentoForm({ profissional, onBack }: Props) {
     setError("")
     try {
       const res = await fetch(
-        `${API_BASE}/profissionais/get-horarios-disponiveis.php?profissional_id=${profissional.id}`,
+        `${API_BASE}/agendamento/get-horarios-disponiveis.php?profissional_id=${profissional.id}`,
         {
           method: "GET",
           headers: { Accept: "application/json" },
@@ -71,7 +70,7 @@ export function AgendamentoForm({ profissional, onBack }: Props) {
 
     try {
       const token = localStorage.getItem("token") || ""
-      const res = await fetch(`${API_BASE}/profissionais/agendar-consulta.php`, {
+      const res = await fetch(`${API_BASE}/agendamento/agendar-consulta.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

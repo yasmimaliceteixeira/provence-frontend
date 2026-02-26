@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion } from "framer-motion"
 import { Send, Paperclip, Search } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
+import { API_BASE } from "@/lib/api-config"
 
 interface Conversation {
   id: number
@@ -26,8 +26,6 @@ interface Message {
   text: string
   time: string
 }
-
-const API_BASE_URL = "http://localhost/api" 
 
 export function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -47,7 +45,7 @@ export function ChatPage() {
   const fetchConversations = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost/chat/listar.php`, {
+      const response = await fetch(`${API_BASE}/chat/listar.php`, {
         method: "GET",
         credentials: "include",
       })
@@ -55,7 +53,6 @@ export function ChatPage() {
       const data = await response.json()
 
       if (data.success && data.data) {
-        // Map API response to component format
         const formattedConversations = data.data.map((conv: any) => ({
           id: conv.id,
           doctor: conv.nome_profissional || conv.nome_paciente,
@@ -92,7 +89,7 @@ export function ChatPage() {
 
   const fetchMessages = async (consultaId: number) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/chat/listar.php?consulta_id=${consultaId}`, {
+      const response = await fetch(`${API_BASE}/chat/listar.php?consulta_id=${consultaId}`, {
         method: "GET",
         credentials: "include",
       })
@@ -100,7 +97,6 @@ export function ChatPage() {
       const data = await response.json()
 
       if (data.success && data.data) {
-        // Map API response to component format
         const formattedMessages = data.data.map((msg: any, index: number) => ({
           id: msg.id || index,
           sender: msg.tipo_remetente === "profissional" ? "doctor" : "patient",
@@ -124,7 +120,7 @@ export function ChatPage() {
 
     try {
       setSendingMessage(true)
-      const response = await fetch(`http://localhost/chat/enviar.php`, {
+      const response = await fetch(`${API_BASE}/chat/enviar.php`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -140,7 +136,6 @@ export function ChatPage() {
 
       if (data.success) {
         setMessage("")
-        // Refresh messages to show the new one
         fetchMessages(selectedChat.id)
         toast({
           title: "Sucesso",
@@ -203,9 +198,8 @@ export function ChatPage() {
           <div className="flex-1 overflow-y-auto space-y-2">
             {filteredConversations.length > 0 ? (
               filteredConversations.map((conv) => (
-                <motion.div
+                <div
                   key={conv.id}
-                  whileHover={{ scale: 1.02 }}
                   onClick={() => {
                     setSelectedChat(conv)
                     fetchMessages(conv.id)
@@ -217,7 +211,6 @@ export function ChatPage() {
                   <div className="flex items-start gap-3">
                     <div className="relative">
                       <Avatar className="w-12 h-12">
-                        <AvatarImage src={`/.jpg?height=48&width=48&query=${conv.doctor}`} />
                         <AvatarFallback className="bg-purple-600 text-white">
                           {conv.doctor
                             .split(" ")
@@ -243,7 +236,7 @@ export function ChatPage() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))
             ) : (
               <p className="text-center text-gray-500 py-8">Nenhuma conversa encontrada</p>
@@ -257,7 +250,6 @@ export function ChatPage() {
           <CardContent className="p-0 h-full flex flex-col">
             <div className="p-4 border-b flex items-center gap-3">
               <Avatar className="w-12 h-12">
-                <AvatarImage src={`/.jpg?height=48&width=48&query=${selectedChat.doctor}`} />
                 <AvatarFallback className="bg-purple-600 text-white">
                   {selectedChat.doctor
                     .split(" ")
@@ -273,10 +265,8 @@ export function ChatPage() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((msg) => (
-                <motion.div
+                <div
                   key={msg.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
                   className={`flex ${msg.sender === "patient" ? "justify-end" : "justify-start"}`}
                 >
                   <div
@@ -291,7 +281,7 @@ export function ChatPage() {
                       {msg.time}
                     </span>
                   </div>
-                </motion.div>
+                </div>
               ))}
               <div ref={messagesEndRef} />
             </div>

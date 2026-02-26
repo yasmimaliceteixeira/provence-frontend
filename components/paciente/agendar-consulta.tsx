@@ -7,8 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Loader2, Search, Star } from "lucide-react"
-
-const API_BASE = "https://provence.host/api/api_provence/api"
+import { API_BASE } from "@/lib/api-config"
 
 export type Profissional = {
   id: number
@@ -40,7 +39,7 @@ export function AgendarConsulta({ onScheduleClick }: Props) {
     setLoading(true)
     setError("")
     try {
-      const res = await fetch(`${API_BASE}/profissionais/exibir-profissionais.php`, {
+      const res = await fetch(`${API_BASE}/agendamento/exibir-profissionais.php`, {
         method: "GET",
         headers: { Accept: "application/json" },
         credentials: "include",

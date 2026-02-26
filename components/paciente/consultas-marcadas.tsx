@@ -4,8 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, Calendar, Clock, User } from "lucide-react"
-
-const API_BASE = "https://provence.host/api/api_provence/api"
+import { API_BASE } from "@/lib/api-config"
 
 type Consulta = {
   id: number
@@ -31,7 +30,7 @@ export function ConsultasMarcadas() {
     setError("")
     try {
       const token = localStorage.getItem("token") || ""
-      const res = await fetch(`${API_BASE}/listar_consultas.php`, {
+      const res = await fetch(`${API_BASE}/paciente/get_all_consultas.php`, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -42,7 +41,6 @@ export function ConsultasMarcadas() {
       const data = await res.json()
       if (data.success || data.status === "success") {
         const todas = data.consultas || data.data || []
-        // Filtra apenas consultas pendentes/confirmadas (futuras)
         setConsultas(
           todas.filter(
             (c: Consulta) =>

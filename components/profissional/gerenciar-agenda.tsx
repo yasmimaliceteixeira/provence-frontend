@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { motion } from "framer-motion"
 import {
   Calendar,
   Clock,
@@ -25,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { API_BASE } from "@/lib/api-config"
 
 // --- Tipagens ---
 type AppointmentStatus = "confirmada" | "pendente" | "cancelada" | "concluida"
@@ -38,16 +38,14 @@ interface Appointment {
     email: string
     phone: string
   }
-  date: string 
-  time: string 
+  date: string
+  time: string
   type: AppointmentType
   status: AppointmentStatus
   sessionNumber: number
   notes?: string
   linkSessao?: string
 }
-
-const API_BASE = "https://provence.host/api/api_provence/api"
 
 // --- Helpers de Normalização ---
 function normalizeStatus(raw: any): AppointmentStatus {
@@ -125,7 +123,7 @@ export function GerenciarAgenda() {
 
   const todayISO = useMemo(() => {
     const now = new Date()
-    return now.toISOString().split('T')[0]
+    return now.toISOString().split("T")[0]
   }, [])
 
   const getStatusColor = (status: Appointment["status"]) => {
@@ -170,12 +168,11 @@ export function GerenciarAgenda() {
     setLoading(true)
     setError("")
     try {
-      const allUrl = `${API_BASE}/get_all_consultas.php`
+      const allUrl = `${API_BASE}/profissional/get_all_consultas.php`
       const allData = await fetchJson(allUrl, { method: "GET" })
       const list = Array.isArray(allData) ? allData : allData?.data ?? []
       const mapped: Appointment[] = list.map(mapApiToAppointment)
-      
-      // CORREÇÃO TS: Tipagem explícita para a e b
+
       mapped.sort((a: Appointment, b: Appointment) => {
         const da = dateToComparable(a.date)
         const db = dateToComparable(b.date)
@@ -194,32 +191,38 @@ export function GerenciarAgenda() {
   const confirmarConsulta = async (id: string) => {
     setActionLoadingId(id)
     try {
-      await fetchJson(`${API_BASE}/confirmar-consulta.php`, { method: "POST", body: JSON.stringify({ id }) })
+      await fetchJson(`${API_BASE}/profissional/confirmar-consulta.php`, { method: "POST", body: JSON.stringify({ id }) })
       setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: "confirmada" } : a)))
-    } catch (e) { setError("Erro ao confirmar") } finally { setActionLoadingId(null) }
+    } catch {
+      setError("Erro ao confirmar")
+    } finally {
+      setActionLoadingId(null)
+    }
   }
 
   const cancelarConsulta = async (id: string) => {
     setActionLoadingId(id)
     try {
-      await fetchJson(`${API_BASE}/cancel_consulta.php`, { method: "POST", body: JSON.stringify({ id }) })
+      await fetchJson(`${API_BASE}/paciente/cancel_consulta.php`, { method: "POST", body: JSON.stringify({ id }) })
       setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: "cancelada" } : a)))
-    } catch (e) { setError("Erro ao cancelar") } finally { setActionLoadingId(null) }
+    } catch {
+      setError("Erro ao cancelar")
+    } finally {
+      setActionLoadingId(null)
+    }
   }
 
   useEffect(() => { carregarConsultas() }, [])
 
-  const todayAppointments = useMemo(() => appointments.filter((apt) => apt.date === todayISO && apt.status !== "cancelada"), [appointments, todayISO])
-  const upcomingAppointments = useMemo(() => appointments.filter((apt) => dateToComparable(apt.date) > dateToComparable(todayISO) && apt.status !== "cancelada"), [appointments, todayISO])
-  const completedAppointments = useMemo(() => appointments.filter((apt) => apt.status === "concluida"), [appointments])
+  const todayAppointments = useMemo(() => appointments.filter((apt) =>
+    apt.date === todayISO && apt.status !== "cancelada"), [appointments, todayISO])
+  const upcomingAppointments = useMemo(() => appointments.filter((apt) =>
+    dateToComparable(apt.date) > dateToComparable(todayISO) && apt.status !== "cancelada"), [appointments, todayISO])
+  const completedAppointments = useMemo(() => appointments.filter((apt) =>
+    apt.status === "concluida"), [appointments])
 
   const renderAppointmentCard = (appointment: Appointment, index: number) => (
-    <motion.div 
-      key={appointment.id} 
-      initial={{ opacity: 0, y: 20 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      transition={{ delay: index * 0.05 }}
-    >
+    <div key={appointment.id}>
       <Card className="p-6 border-border/50 hover:shadow-xl transition-all mb-4">
         <div className="flex items-start gap-4">
           <Avatar className="w-14 h-14 border-2 border-primary/20">
@@ -230,7 +233,7 @@ export function GerenciarAgenda() {
             <div className="flex justify-between items-start">
               <div>
                 <h4 className="font-semibold text-lg">{appointment.patient.name}</h4>
-                <p className="text-sm text-muted-foreground">Sessão #{appointment.sessionNumber}</p>
+                <p className="text-sm text-muted-foreground">{"Sessão #" + appointment.sessionNumber}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -238,15 +241,15 @@ export function GerenciarAgenda() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setSelectedAppointment(appointment)}>
-                    <FileText className="w-4 h-4 mr-2"/> Ver Detalhes
+                    <FileText className="w-4 h-4 mr-2" /> Ver Detalhes
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => cancelarConsulta(appointment.id)} className="text-red-500">
-                    <XCircle className="w-4 h-4 mr-2"/> Cancelar
+                    <XCircle className="w-4 h-4 mr-2" /> Cancelar
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            
+
             <div className="flex flex-wrap gap-3 my-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="w-4 h-4" /> {appointment.time}
@@ -269,15 +272,15 @@ export function GerenciarAgenda() {
                 </>
               )}
               {appointment.status === "confirmada" && (
-                <Button size="sm" className="w-full bg-primary" onClick={() => appointment.linkSessao && window.open(appointment.linkSessao, '_blank')}>
-                   {appointment.type === 'video' ? 'Entrar na Videochamada' : 'Iniciar Sessão'}
+                <Button size="sm" className="w-full bg-primary" onClick={() => appointment.linkSessao && window.open(appointment.linkSessao, "_blank")}>
+                  {appointment.type === "video" ? "Entrar na Videochamada" : "Iniciar Sessão"}
                 </Button>
               )}
             </div>
           </div>
         </div>
       </Card>
-    </motion.div>
+    </div>
   )
 
   return (
@@ -304,21 +307,21 @@ export function GerenciarAgenda() {
       ) : (
         <Tabs defaultValue="hoje" className="space-y-6">
           <TabsList className="bg-muted/50 p-1">
-            <TabsTrigger value="hoje">Hoje ({todayAppointments.length})</TabsTrigger>
-            <TabsTrigger value="proximas">Próximas ({upcomingAppointments.length})</TabsTrigger>
-            <TabsTrigger value="concluidas">Concluídas ({completedAppointments.length})</TabsTrigger>
+            <TabsTrigger value="hoje">{"Hoje (" + todayAppointments.length + ")"}</TabsTrigger>
+            <TabsTrigger value="proximas">{"Próximas (" + upcomingAppointments.length + ")"}</TabsTrigger>
+            <TabsTrigger value="concluidas">{"Concluídas (" + completedAppointments.length + ")"}</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="hoje">
             {todayAppointments.length === 0 ? <p className="text-center py-10 text-muted-foreground">Sem consultas para hoje.</p> : todayAppointments.map(renderAppointmentCard)}
           </TabsContent>
-          
+
           <TabsContent value="proximas">
-             {upcomingAppointments.length === 0 ? <p className="text-center py-10 text-muted-foreground">Sem consultas próximas.</p> : upcomingAppointments.map(renderAppointmentCard)}
+            {upcomingAppointments.length === 0 ? <p className="text-center py-10 text-muted-foreground">Sem consultas próximas.</p> : upcomingAppointments.map(renderAppointmentCard)}
           </TabsContent>
-          
+
           <TabsContent value="concluidas">
-             {completedAppointments.length === 0 ? <p className="text-center py-10 text-muted-foreground">Nenhuma consulta concluída.</p> : completedAppointments.map(renderAppointmentCard)}
+            {completedAppointments.length === 0 ? <p className="text-center py-10 text-muted-foreground">Nenhuma consulta concluída.</p> : completedAppointments.map(renderAppointmentCard)}
           </TabsContent>
         </Tabs>
       )}
