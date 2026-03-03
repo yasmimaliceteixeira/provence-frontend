@@ -84,7 +84,6 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (data.success) {
-        // Salvar dados do usuário no localStorage para uso em outras telas
         if (typeof window !== "undefined") {
           localStorage.setItem("user_logged", JSON.stringify(data.data))
           localStorage.setItem("usuario", JSON.stringify(data.data))
@@ -126,20 +125,20 @@ export default function LoginPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-[#f8f6f4] flex items-center justify-center">
+      <div className="min-h-screen bg-[#fcfaff] flex items-center justify-center">
         <div className="animate-pulse">
-          <div className="w-8 h-8 bg-[#c9a96e]/30 rounded-full" />
+          <div className="w-8 h-8 bg-[#8b5cf6]/30 rounded-full" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f6f4] flex flex-col relative overflow-hidden">
-      {/* Background decorative elements */}
+    <div className="min-h-screen bg-[#fcfaff] flex flex-col relative overflow-hidden">
+      {/* Background decorative elements - Agora em tons de lilás suave */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#c9a96e]/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#c9a96e]/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#a78bfa]/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#a78bfa]/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       <div className="flex-grow container mx-auto flex items-center justify-center p-4 relative z-10">
@@ -148,12 +147,13 @@ export default function LoginPage() {
             <CardHeader className="text-center pb-8 pt-12 relative z-10">
               <div className="flex justify-center mb-6">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#c9a96e] to-[#b8944f] rounded-2xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                    <div className="w-16 h-16 bg-gradient-to-br from-[#c9a96e] to-[#d4b87a] rounded-xl flex items-center justify-center">
+                  {/* Gradiente lilás seguindo o ícone da foto */}
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] rounded-2xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#a78bfa] to-[#8b5cf6] rounded-xl flex items-center justify-center">
                       <Lock className="h-8 w-8 text-white" />
                     </div>
                   </div>
-                  <div className="absolute -inset-2 bg-[#c9a96e]/20 rounded-2xl blur animate-pulse" />
+                  <div className="absolute -inset-2 bg-[#8b5cf6]/20 rounded-2xl blur animate-pulse" />
                 </div>
               </div>
 
@@ -184,7 +184,7 @@ export default function LoginPage() {
                     htmlFor="email"
                     className="text-[#2c2c2c] font-semibold flex items-center gap-2 text-sm"
                   >
-                    <Mail className="h-4 w-4 text-[#c9a96e]" />
+                    <Mail className="h-4 w-4 text-[#8b5cf6]" />
                     Email
                   </Label>
                   <div className="relative">
@@ -194,7 +194,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
-                      className="h-12 border-[#e0dcd6] focus:border-[#c9a96e] focus:ring-[#c9a96e]/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 pl-4 text-[#2c2c2c] placeholder:text-[#a0a0a0]"
+                      className="h-12 border-[#e9e4f0] focus:border-[#8b5cf6] focus:ring-[#8b5cf6]/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 pl-4 text-[#2c2c2c] placeholder:text-[#a0a0a0]"
                       required
                       disabled={loading}
                     />
@@ -206,7 +206,7 @@ export default function LoginPage() {
                     htmlFor="senha"
                     className="text-[#2c2c2c] font-semibold flex items-center gap-2 text-sm"
                   >
-                    <Lock className="h-4 w-4 text-[#c9a96e]" />
+                    <Lock className="h-4 w-4 text-[#8b5cf6]" />
                     Senha
                   </Label>
                   <div className="relative">
@@ -216,14 +216,14 @@ export default function LoginPage() {
                       value={senha}
                       onChange={(e) => setSenha(e.target.value)}
                       placeholder="Sua senha"
-                      className="h-12 border-[#e0dcd6] focus:border-[#c9a96e] focus:ring-[#c9a96e]/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 pl-4 pr-12 text-[#2c2c2c] placeholder:text-[#a0a0a0]"
+                      className="h-12 border-[#e9e4f0] focus:border-[#8b5cf6] focus:ring-[#8b5cf6]/20 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-300 pl-4 pr-12 text-[#2c2c2c] placeholder:text-[#a0a0a0]"
                       required
                       disabled={loading}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#a0a0a0] hover:text-[#c9a96e] transition-colors duration-200"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#a0a0a0] hover:text-[#8b5cf6] transition-colors duration-200"
                       disabled={loading}
                     >
                       {showPassword ? (
@@ -258,7 +258,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-[#c9a96e] to-[#b8944f] hover:from-[#b8944f] hover:to-[#a68340] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="w-full h-12 bg-gradient-to-r from-[#8b5cf6] to-[#6d28d9] hover:from-[#7c3aed] hover:to-[#5b21b6] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   disabled={loading}
                 >
                   {loading ? (
@@ -278,7 +278,7 @@ export default function LoginPage() {
               <div className="mt-8 text-center">
                 <Link
                   href="/esqueci-senha"
-                  className="text-[#c9a96e] hover:text-[#b8944f] transition-colors font-medium text-sm hover:underline"
+                  className="text-[#8b5cf6] hover:text-[#6d28d9] transition-colors font-medium text-sm hover:underline"
                 >
                   Esqueci minha senha
                 </Link>
@@ -290,7 +290,7 @@ export default function LoginPage() {
                 {"Não tem uma conta? "}
                 <Link
                   href="/register"
-                  className="text-[#c9a96e] hover:text-[#b8944f] transition-colors font-semibold hover:underline"
+                  className="text-[#8b5cf6] hover:text-[#6d28d9] transition-colors font-semibold hover:underline"
                 >
                   Cadastre-se
                 </Link>
