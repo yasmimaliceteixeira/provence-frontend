@@ -173,7 +173,7 @@ export default function CompletarPerfilPage() {
     try {
       console.log("Enviando dados:", { usuario_id: user.id, ...perfil })
 
-      const response = await fetch("https://provence.host/completar_perfil.php", {
+      const response = await fetch("https://provence.host/auth/completar_perfil.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
