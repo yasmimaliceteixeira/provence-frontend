@@ -7,7 +7,7 @@ export default function Footer() {
           {/* Logo + descrição */}
           <div>
             <h3 className="text-2xl font-bold mb-4 tracking-wide">
-              PsicoOnline
+              PROVENCE
             </h3>
             <p className="text-[#D7C7FF] text-sm leading-relaxed max-w-sm">
               Transformando vidas através da psicoterapia online acessível, 
